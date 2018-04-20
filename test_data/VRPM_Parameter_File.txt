@@ -1,0 +1,12 @@
+#####################################################
+#####################################################
+			VEP Results Parser Merger
+#####################################################
+#####################################################
+  ALL variables are space seperated from input key	
+
+Name of Original VCF Type File
+--VCF_Input_File sig_variants_report.txt
+
+Name of VEP Output File
+--VEP_Input_File vep_results.txt
