@@ -143,6 +143,8 @@ def parsing_vep_consequences(filename):
     five_prime_utr_variant_counter = 0
     splice_region_variant_counter = 0
     others_counter = 0
+    non_coding_transcript_exon_variant = 0
+
 
     # Creating lists to store values of distances
     upstream_bin = []
@@ -213,6 +215,10 @@ def parsing_vep_consequences(filename):
                 splice_region_variant_counter += 1
                 continue
 
+            elif parsed_line[3].startswith('non_coding_transcript_exon_variant'):
+                non_coding_transcript_exon_variant += 1
+                continue
+
             else:
                 others_counter += 1
                 continue
@@ -247,6 +253,9 @@ def parsing_vep_consequences(filename):
                          + "%" + '\n')
     summary_report.write("Splice region variants\t" + str(splice_region_variant_counter)
                          + "\t" + str(round(splice_region_variant_counter / all_variants_counter * 100, 2))
+                         + "%" + '\n')
+    summary_report.write("Non-coding transcript exon variants\t" + str(non_coding_transcript_exon_variant)
+                         + "\t" + str(round(non_coding_transcript_exon_variant / all_variants_counter * 100, 2))
                          + "%" + '\n')
     summary_report.write("'Other' variants\t" + str(others_counter)
                          + "\t" + str(round(others_counter / all_variants_counter * 100, 2))
@@ -446,6 +455,7 @@ def merge_final_results(vcf_input_file, vep_input_file):
             #Now matching up the variant from the vcf file and merging annotation documentation
             
             parsed_line = line.rstrip().split('\t')
+
             vcf_variant_name = parsed_line[0] + ":" + parsed_line[1] + "-" + parsed_line[1]
             
             variant_gene_info = parsed_line[:5]
@@ -454,17 +464,30 @@ def merge_final_results(vcf_input_file, vep_input_file):
             variant_gene_info = ('\t'.join(map(str,variant_gene_info)))
             variant_rest = ('\t'.join(map(str,variant_rest)))
 
-            variant_consequence = str(vep_results_dict[vcf_variant_name]['consequence'])
-            variant_impact = str(vep_results_dict[vcf_variant_name]['impact'])
-            variant_symbol = str(vep_results_dict[vcf_variant_name]['symbol'])
-            variant_gene = str(vep_results_dict[vcf_variant_name]['gene'])
+            try:
+                variant_consequence = str(vep_results_dict[vcf_variant_name]['consequence'])
+                variant_impact = str(vep_results_dict[vcf_variant_name]['impact'])
+                variant_symbol = str(vep_results_dict[vcf_variant_name]['symbol'])
+                variant_gene = str(vep_results_dict[vcf_variant_name]['gene'])
 
-            annota_vcf_file_name.write(variant_gene_info
-                                       + "\t" + variant_consequence + "\t"
-                                       + variant_impact + "\t"
-                                       + variant_symbol + "\t"
-                                       + variant_gene + "\t"
-                                       + variant_rest + "\n")
+                annota_vcf_file_name.write(variant_gene_info
+                                        + "\t" + variant_consequence + "\t"
+                                        + variant_impact + "\t"
+                                        + variant_symbol + "\t"
+                                        + variant_gene + "\t"
+                                        + variant_rest + "\n")
+            except KeyError:
+                variant_consequence = 'No Entry'
+                variant_impact = 'No Entry'
+                variant_symbol = 'No Entry'
+                variant_gene = 'No Entry'
+
+                annota_vcf_file_name.write(variant_gene_info
+                                        + "\t" + variant_consequence + "\t"
+                                        + variant_impact + "\t"
+                                        + variant_symbol + "\t"
+                                        + variant_gene + "\t"
+                                        + variant_rest + "\n")
 
 
     # Closing the files
