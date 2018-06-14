@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.6
 from collections import Counter
+import os
 
 # Program Parsing Through Ensemble VEP Results (txt output), performs some statistical
 # analysis and merges key results back with the original VCF file submitted
@@ -168,54 +169,54 @@ def parsing_vep_consequences(filename):
 
             # Setting up various filters/counters of the data 
             # getting variant count
-            if parsed_line[3] == 'synonymous_variant':
+            if parsed_line[2] == 'synonymous_variant':
                 synonymous_variant_counter += 1
                 continue
 
             # Getting variant counts and writing to file
-            elif parsed_line[3] == 'downstream_gene_variant':
+            elif parsed_line[2] == 'downstream_gene_variant':
                 downstream_file.write(line)
 
                 # getting downstream distance values
-                downstream_bin.append(parsed_line[20])
+                downstream_bin.append(parsed_line[19])
 
                 # adding to counter
                 downstream_gene_variant_counter += 1
 
-            elif parsed_line[3] == '3_prime_UTR_variant':
+            elif parsed_line[2] == '3_prime_UTR_variant':
                 three_prime_utr_variant_counter += 1
                 continue
 
-            elif parsed_line[3] == 'intron_variant':
+            elif parsed_line[2] == 'intron_variant':
                 intron_variant_counter += 1
                 continue
 
-            elif parsed_line[3] == 'missense_variant':
+            elif parsed_line[2] == 'missense_variant':
                 missense_variant_counter += 1
                 continue
 
-            elif parsed_line[3] == 'upstream_gene_variant':
+            elif parsed_line[2] == 'upstream_gene_variant':
                 upstream_file.write(line)
 
                 # getting upstream distance values
-                upstream_bin.append(parsed_line[20])
+                upstream_bin.append(parsed_line[19])
 
                 # adding to counter
                 upstream_gene_variant_counter += 1
 
-            elif parsed_line[3] == 'intergenic_variant':
+            elif parsed_line[2] == 'intergenic_variant':
                 intergenic_variant_counter += 1
                 continue
 
-            elif parsed_line[3] == '5_prime_UTR_variant':
+            elif parsed_line[2] == '5_prime_UTR_variant':
                 five_prime_utr_variant_counter += 1
                 continue
 
-            elif parsed_line[3].startswith('splice_region_variant'):
+            elif parsed_line[2].startswith('splice_region_variant'):
                 splice_region_variant_counter += 1
                 continue
 
-            elif parsed_line[3].startswith('non_coding_transcript_exon_variant'):
+            elif parsed_line[2].startswith('non_coding_transcript_exon_variant'):
                 non_coding_transcript_exon_variant += 1
                 continue
 
@@ -373,6 +374,7 @@ def parsing_vep_results(file_name, y):
     :return counts: counts from that column of interest  
 
     """
+
     with open(file_name) as data_file:
         # creating an empty list for storing data
         values = []
@@ -416,10 +418,10 @@ def merge_final_results(vcf_input_file, vep_input_file):
             # Parsing actual data line
             parsed_line = line.rstrip().split('\t')
             variant_name = parsed_line[1]
-            consequence = parsed_line[3]
-            impact = parsed_line[4]
-            symbol = parsed_line[5]
-            gene = parsed_line[6]
+            consequence = parsed_line[2]
+            impact = parsed_line[3]
+            symbol = parsed_line[4]
+            gene = parsed_line[5]
 
             vep_results_dict.update({variant_name: {'variant_name': variant_name,
                                                     'consequence': consequence, 
@@ -519,7 +521,7 @@ def main():
     ensemble_file.write(file_header)
 
     # Parse the vcf files and counts the  Ensemble_Gene_IDs
-    counted_data = parsing_vep_results(vep_input_file, 6)
+    counted_data = parsing_vep_results(vep_input_file, 5)
 
     # Calls the function to convert counter module output
     # into a more appropriate parsing form (get rid of dictionary junk
@@ -541,7 +543,7 @@ def main():
     gene_file.write(file_header)
 
     # Parse the vcf files and counts the Gene Symbols
-    counted_data = parsing_vep_results(vep_input_file, 5)
+    counted_data = parsing_vep_results(vep_input_file, 4)
 
     # Calls the function to convert counter module output
     # into a more appropriate parsing form (get rid of dictionary junk
@@ -563,7 +565,7 @@ def main():
     protein_file.write(file_header)
 
     # Parse the vcf files and counts the protein ensemble IDs
-    counted_data = parsing_vep_results(vep_input_file, 8)
+    counted_data = parsing_vep_results(vep_input_file, 7)
 
     # Calls the function to convert counter module output
     # into a more appropriate parsing form (get rid of dictionary junk
