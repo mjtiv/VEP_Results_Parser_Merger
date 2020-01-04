@@ -1,32 +1,42 @@
 #!/usr/bin/env python3.6
 from collections import Counter
 import os
+import sys
 
-# Program Parsing Through Ensemble VEP Results (txt output), performs some statistical
-# analysis and merges key results back with the original VCF file submitted
 
-# Was written in various stages and much of the code is brute force coding style
-# Program became a kind of frankstein program that probably can be simplified, 
-# but it works and over run time is very fast. 
+'''
 
-# Parts of Program
-# 1. Analyzes the number of genes that are found in a VEP file by gene symbol,
-#       ensemble gene ID and protein ID
-# 2. Analyzes the type of consequences found in a VEP file (quantifies counts) and
-#       determines how far downstream variants are from a gene (verify extended 3'UTR)
-# 4. Merge VEP results with Original VCF file analyzed
+    Program Parsing Through Ensemble VEP Results (txt output), performs some statistical
+    analysis and merges key results back with the original VCF file submitted
 
-# Note: Program is kind of a Frankenstein/Brute force program that where different parts were
-# developed at different times and then all functionalities were merged into one program to simplify
-# a graduate students life. Program runs pretty quickly, so further cleaning up and development
-# was postponed to another day.
+    Was written in various stages and much of the code is brute force coding style
+    Program became a kind of frankstein program that probably can be simplified, 
+    but it works and over run time is very fast. 
+
+    Parts of Program
+    1. Analyzes the number of genes that are found in a VEP file by gene symbol,
+    ensemble gene ID and protein ID
+    2. Analyzes the type of consequences found in a VEP file (quantifies counts) and
+    determines how far downstream variants are from a gene (verify extended 3'UTR)
+    3. Merge VEP results with Original VCF file analyzed
+
+'''
+
+########################################################################################################################
+############################################## GENERIC PARTS OF CODE ###################################################
+########################################################################################################################
+
 
 def parsing_input_parameter_file():
-    """ 
+
+    """
+
     Parses through the paramter file to return a dictionary
     of the input parameters
-    :param none: automatically opens file
-    :return dictionary: dictionary of file names for analysis
+
+    : Param none: automatically opens file
+    : Return dictionary: dictionary of file names for analysis
+    
     """
 
     input_file = open('VRPM_Parameter_File.txt', 'r')
@@ -63,11 +73,16 @@ def parsing_input_parameter_file():
 
 
 def average(list_values):
+
     """
+
     Finds the average of a list (no tricks)
-    :param list_values: list of values to average
-    :return average_numb: average number
+
+    : Param list_values: list of values to average
+    : Return average_numb: average number
+
     """
+
     list_sum = 0
     for value in list_values:
         list_sum = list_sum + int(value)
@@ -76,11 +91,16 @@ def average(list_values):
 
 
 def max_value(list_values):
+    
     """
+
     Finds the max value from a list of values
-    :param list_values: list of values
-    :return max_numb: returns the max number of a list
+
+    : Param list_values: list of values
+    : Return max_numb: returns the max number of a list
+
     """
+    
     # need to initialize starting value
     max_numb = int(list_values[0])
 
@@ -95,11 +115,16 @@ def max_value(list_values):
 
 
 def min_value(list_values):
+
     """
+
     Finds the min value from a list of values
-    :param list_values: list of values
-    :return min_numb: returns the min number of a list
+
+    : Param list_values: list of values
+    : Return min_numb: returns the min number of a list
+
     """
+    
     min_numb = int(list_values[0])
 
     for value in list_values:
@@ -112,13 +137,19 @@ def min_value(list_values):
     return min_numb
 
 
-def parsing_vep_consequences(filename):
+def parsing_vep_consequences(filename, variant_results_index,
+                             variant_downstream_distance_index):
+    
     """
+
     Parsing VEP consequence output and prints a summary Report
     of the consquences. Similiar to overview diagrams of consquences
     found on their website
-    :param filename: name of file being analyzed
-    :return dictionary: returns a dictionary of upstream and downstream variant results
+
+    : Param filename: name of file being analyzed
+    : Param variant_results_index: Index location of the variant results in file
+    : Param variant_downstream_distance_index: Index of the downstream distance for the variant
+    : Return dictionary: returns a dictionary of upstream and downstream variant results
 
     """
 
@@ -169,54 +200,54 @@ def parsing_vep_consequences(filename):
 
             # Setting up various filters/counters of the data 
             # getting variant count
-            if parsed_line[2] == 'synonymous_variant':
+            if parsed_line[variant_results_index] == 'synonymous_variant':
                 synonymous_variant_counter += 1
                 continue
 
             # Getting variant counts and writing to file
-            elif parsed_line[2] == 'downstream_gene_variant':
+            elif parsed_line[variant_results_index] == 'downstream_gene_variant':
                 downstream_file.write(line)
 
                 # getting downstream distance values
-                downstream_bin.append(parsed_line[19])
+                downstream_bin.append(parsed_line[variant_downstream_distance_index])
 
                 # adding to counter
                 downstream_gene_variant_counter += 1
 
-            elif parsed_line[2] == '3_prime_UTR_variant':
+            elif parsed_line[variant_results_index] == '3_prime_UTR_variant':
                 three_prime_utr_variant_counter += 1
                 continue
 
-            elif parsed_line[2] == 'intron_variant':
+            elif parsed_line[variant_results_index] == 'intron_variant':
                 intron_variant_counter += 1
                 continue
 
-            elif parsed_line[2] == 'missense_variant':
+            elif parsed_line[variant_results_index] == 'missense_variant':
                 missense_variant_counter += 1
                 continue
 
-            elif parsed_line[2] == 'upstream_gene_variant':
+            elif parsed_line[variant_results_index] == 'upstream_gene_variant':
                 upstream_file.write(line)
 
                 # getting upstream distance values
-                upstream_bin.append(parsed_line[19])
+                upstream_bin.append(parsed_line[variant_downstream_distance_index])
 
                 # adding to counter
                 upstream_gene_variant_counter += 1
 
-            elif parsed_line[2] == 'intergenic_variant':
+            elif parsed_line[variant_results_index] == 'intergenic_variant':
                 intergenic_variant_counter += 1
                 continue
 
-            elif parsed_line[2] == '5_prime_UTR_variant':
+            elif parsed_line[variant_results_index] == '5_prime_UTR_variant':
                 five_prime_utr_variant_counter += 1
                 continue
 
-            elif parsed_line[2].startswith('splice_region_variant'):
+            elif parsed_line[variant_results_index].startswith('splice_region_variant'):
                 splice_region_variant_counter += 1
                 continue
 
-            elif parsed_line[2].startswith('non_coding_transcript_exon_variant'):
+            elif parsed_line[variant_results_index].startswith('non_coding_transcript_exon_variant'):
                 non_coding_transcript_exon_variant += 1
                 continue
 
@@ -275,13 +306,18 @@ def parsing_vep_consequences(filename):
 
 
 def binning_data(name_of_binning, data_values):
+
     """
+
     Function bins the upstream and downstream variant results
     Bins are based on upto 5,000 bps becauses VEPs limit for considering
     a neighboring gene is this far
-    :param name_of_binning: upstream or downstream variants
-    :param data_values: values being analyzed
-    :return NONE 
+
+    : Param name_of_binning: upstream or downstream variants
+    : Param data_values: values being analyzed
+
+    : Return NONE
+    
     """
     bin_one = 0
     bin_two = 0
@@ -327,12 +363,17 @@ def binning_data(name_of_binning, data_values):
 
 
 def print_data_to_file(splitting_data, file_name):
+    
     """
+
     Function analyzes the counter results and prints the results
     to the file of interest
-    :param splitting_data: counter data will all junk removed
-    :param file_name: name of file being printed to:
-    :return NONE
+
+    : Param splitting_data: counter data will all junk removed
+    : Param file_name: name of file being printed to:
+
+    : Return NONE
+    
     """
     for x in range(len(splitting_data)):
         all_data_values = splitting_data[x]
@@ -343,13 +384,16 @@ def print_data_to_file(splitting_data, file_name):
         file_name.write(returned_data)
 
 
-# Counter module adds in tons of junk
 def replacing_counter_junk(data):
+    
     """
+
     Count module adds in tons of junk into 
     the analysis, function removes ALL it (tons of steps)
-    :param data: data to get rid of junk
-    :return replacement_eight: cleaned up data
+
+    : Param data: data to get rid of junk
+    : Return replacement_eight: cleaned up data
+
     """
 
     replacement_one = data.replace('{', '')
@@ -364,14 +408,17 @@ def replacing_counter_junk(data):
 
 
 def parsing_vep_results(file_name, y):
+
     """
+
     Function parses through a specific column of VEP Results
     to create a list of results which is then tallied with the 
     Counter module (note: tons of junk gets added to tally 
         with this module)
-    :param file_name: name of VEP file being analyzed
-    :param y: specific column of VEP txt file being parsed_line
-    :return counts: counts from that column of interest  
+
+    : Param file_name: name of VEP file being analyzed
+    : Param y: specific column of VEP txt file being parsed_line
+    : Return counts: counts from that column of interest  
 
     """
 
@@ -394,13 +441,18 @@ def parsing_vep_results(file_name, y):
     return counts
 
 
-def merge_final_results(vcf_input_file, vep_input_file):
+def merge_final_results(vcf_input_file, vep_input_file, file_type):
+
     """
+
     Functions opens the vep file (again...), retrieves important variant effect information
     from the file, this information then gets merged back with the original vcf file
-    :param vcf_input_file: original vcf file submitted to VEP
-    :param vep_input_file: vep output file
-    return NONE
+
+    : Param vcf_input_file: original vcf file submitted to VEP
+    : Param vep_input_file: vep output file
+    : Param file_type: Type of VEP file being parsed (indices chance slightly)
+    : Return NONE
+
     """
 
     #Creating an empty dictionary to store information
@@ -415,13 +467,23 @@ def merge_final_results(vcf_input_file, vep_input_file):
         if line.startswith('#'):
             continue
         else:
-            # Parsing actual data line
-            parsed_line = line.rstrip().split('\t')
-            variant_name = parsed_line[1]
-            consequence = parsed_line[2]
-            impact = parsed_line[3]
-            symbol = parsed_line[4]
-            gene = parsed_line[5]
+            # Indices of the Different VEP Files Change Slightly
+            if file_type == 'rs_file':
+                # Parsing actual data line
+                parsed_line = line.rstrip().split('\t')
+                variant_name = parsed_line[1]
+                consequence = parsed_line[3]
+                impact = parsed_line[4]
+                symbol = parsed_line[5]
+                gene = parsed_line[6]
+            else:
+                # Parsing actual data line
+                parsed_line = line.rstrip().split('\t')
+                variant_name = parsed_line[1]
+                consequence = parsed_line[2]
+                impact = parsed_line[3]
+                symbol = parsed_line[4]
+                gene = parsed_line[5]
 
             vep_results_dict.update({variant_name: {'variant_name': variant_name,
                                                     'consequence': consequence, 
@@ -496,6 +558,60 @@ def merge_final_results(vcf_input_file, vep_input_file):
     annota_vcf_file_name.close()
     vcf_file.close()
 
+########################################################################################################################
+################################################ Determine File Type ###################################################
+########################################################################################################################
+
+def determine_VEP_file_type(vep_input_file):
+
+    """
+
+    Determine the file type produced by VEP to propery parse the results.
+    VEP outputs different types of files with different column numbers
+
+    : Param vep_input_file: Input file being parsed
+    : Return type_of_file: Type of file to determine columns to parse
+
+    """
+
+    # Open the input file
+    input_file = open(vep_input_file, 'r')
+
+    # Loop over the first line and break out
+    for line in input_file:
+
+        # Flag if Allele File Type
+        if line.startswith("#Allele"):
+            file_type = 'allele_file'
+
+            # Break out of loop
+            break
+
+        # Flag is RS IDs File Type
+        elif line.startswith("#Uploaded_variation"):
+            file_type = 'rs_file'
+
+            # Break out of loop
+            break
+
+        # Else Break Program is Neither is Found
+        else:
+            print ("")
+            print ("Third Type of VEP Output File Encountered")
+            print ('Header Does Not Start With "Allele or "Uploaded_variation ')
+            print ("Killing Program")
+            print ("")
+            sys.exit()
+
+    print ("File type is: " + file_type)
+  
+    return (file_type)
+
+
+########################################################################################################################
+################################################ MAIN FUNCTION #########################################################
+########################################################################################################################
+
 
 def main():
 
@@ -508,7 +624,9 @@ def main():
     vcf_input_file = parameter_stuff['vcf_file_name']
     vep_input_file = parameter_stuff['vep_input_file']
 
-    
+    # Determine VEP Output File Type (VEP Outputs Two Different File Types with different number of columns)
+    file_type = determine_VEP_file_type(vep_input_file)
+
     # Creating the output files for data analysis (three different txt files)
     ensemble_file = open('ensemble_gene_IDs.txt', "w")
     gene_file = open('genes.txt', "w")
@@ -520,8 +638,14 @@ def main():
     file_header = "Ensemble Gene ID\tCounts\n"
     ensemble_file.write(file_header)
 
-    # Parse the vcf files and counts the  Ensemble_Gene_IDs
-    counted_data = parsing_vep_results(vep_input_file, 5)
+    # Parse the vcf files and counts the  Ensemble_Gene_IDs (Parse differently based on file type)
+    if file_type == 'rs_file':
+        counted_data = parsing_vep_results(vep_input_file, 6)
+        print ("Done Counting Ensemble Genes")
+        
+    else:
+        counted_data = parsing_vep_results(vep_input_file, 5)
+        print ("Done Counting Ensemble Genes")
 
     # Calls the function to convert counter module output
     # into a more appropriate parsing form (get rid of dictionary junk
@@ -542,8 +666,13 @@ def main():
     file_header = "Gene ID\tCounts\n"
     gene_file.write(file_header)
 
-    # Parse the vcf files and counts the Gene Symbols
-    counted_data = parsing_vep_results(vep_input_file, 4)
+    # Parse the vcf files and counts the Gene Symbols (Parse differently based on file type)
+    if file_type == 'rs_file':
+        counted_data = parsing_vep_results(vep_input_file, 5)
+        print ("Done Counting Gene Symbols")
+    else:
+        counted_data = parsing_vep_results(vep_input_file, 4)
+        print ("Done Counting Gene Symbols")
 
     # Calls the function to convert counter module output
     # into a more appropriate parsing form (get rid of dictionary junk
@@ -564,8 +693,13 @@ def main():
     file_header = "Protein Ensemble ID\tCounts\n"
     protein_file.write(file_header)
 
-    # Parse the vcf files and counts the protein ensemble IDs
-    counted_data = parsing_vep_results(vep_input_file, 7)
+    # Parse the vcf files and counts the protein ensemble IDs (Parse differently based on file type)
+    if file_type == 'rs_file':
+        counted_data = parsing_vep_results(vep_input_file, 8)
+        print ("Done Counting Protein Ensemble IDs")
+    else:   
+        counted_data = parsing_vep_results(vep_input_file, 7)
+        print ("Done Counting Protein Ensemble IDs")
 
     # Calls the function to convert counter module output
     # into a more appropriate parsing form (get rid of dictionary junk
@@ -583,7 +717,17 @@ def main():
     #########################################################
     # Analyzing Distance of Variants form Genes
     print("Running Analysis of Variant Distances from Genes")
-    data_results = parsing_vep_consequences(vep_input_file)
+
+    if file_type == 'rs_file':
+        # Index Location of Data in File
+        variant_results_index = 3
+        variant_downstream_distance_index = 20
+        data_results = parsing_vep_consequences(vep_input_file, variant_results_index, variant_downstream_distance_index)
+    else:
+        # Index Location of Data in File
+        variant_results_index = 2
+        variant_downstream_distance_index = 19
+        data_results = parsing_vep_consequences(vep_input_file, variant_results_index, variant_downstream_distance_index)
 
     upstream_bin = data_results['upstream_bin']
     downstream_bin = data_results['downstream_bin']
@@ -596,7 +740,7 @@ def main():
     #########################################################
     # Merging VEP Results with VCF File
     print ("Merging VEP Results with VCF Files")
-    merge_final_results(vcf_input_file, vep_input_file)
+    merge_final_results(vcf_input_file, vep_input_file, file_type)
 
     print ("Program Done Running")
     
