@@ -35,12 +35,12 @@ Required Files for Running
 2. VRPM_Parameter_File.txt (change input file paramters)
 
 #Running Program:
-First change the parameter files parameters. Very simple just update to your file name on the specific parameter line.
+First change the parameter file's parameters. Very simple just update to your file name on the specific parameter line for the corresponding files.
+
 Make sure to submit the correct file based on its type in the parameter file. 
 (Example    --File_XYZ_Input your_file) ---note space seperated from type of input
 
-Open up the program and run in python, all files must be in the same directory as the program. Output will occur in 
-the same directory too. 
+Open up the program and run in python or double click on program to automatically run. IMPORTANT all files must be in the same directory as the program and output will occur in the same directory too. 
 
 #Output Files
 1. genes.txt (tally of genes- Symbol column)
