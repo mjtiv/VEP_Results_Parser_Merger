@@ -8,7 +8,7 @@ Delaware under the supervision of Dr. Behnam Abasht website: "http://canr.udel.e
 Code takes in a txt file produced from an Ensembl VEP analysis
 https://useast.ensembl.org/Tools/VEP
 
-Latest version of program can handle two different types of txt files outputted by VEP
+Latest version of program can handle two different types of txt files outputted by VEP without user involvement (code is smarter now)
 
 This is a simple code that just pulls out specific columns of information and tallies the results. There are two parts of the code,
 part I tallies genes and part II examines specific features of the consequence column.
